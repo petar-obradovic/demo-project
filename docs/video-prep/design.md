@@ -57,9 +57,9 @@ instructions-audit video. Everything video-related lives in
   `InsufficientStockException`), `increaseStock(int)`, `deactivate()`.
 - **`Customer`** — `CustomerId`, name, `Email`, shipping `Address`. Light by
   design; exists so "customer's cart/order" is real.
-- **`Cart`** — `CartId`, `customerId` (one **active** cart per customer),
-  `List<CartItem>`; `CartItem` = productId + name snapshot +
-  `Money unitPrice` snapshot + quantity (≥ 1).
+- **`Cart`** — `CartId`, `customerId` (one cart per customer — cleared at
+  checkout, never deleted), `List<CartItem>`; `CartItem` = productId + name
+  snapshot + `Money unitPrice` snapshot + quantity (≥ 1).
   Behavior: `addItem` (merges quantities for same product), `changeQuantity`,
   `removeItem`, `total(): Money`, `clear()`.
 - **`Order`** — `OrderId`, `customerId`, `List<OrderLine>` (snapshots copied
@@ -75,7 +75,7 @@ instructions-audit video. Everything video-related lives in
 ### Repository ports (`domain.<aggregate>`)
 
 `ProductRepository`, `CustomerRepository`, `CartRepository`
-(`findActiveByCustomerId`), `OrderRepository` (`findByCustomerId`). Plain
+(`findByCustomerId`), `OrderRepository` (`findByCustomerId`). Plain
 interfaces over domain types — no Spring types in signatures.
 
 ## Application layer (`com.demo.store.application`)
@@ -122,14 +122,13 @@ Request DTO validation via `jakarta.validation` annotations.
 ## Infrastructure (`com.demo.store.infrastructure`)
 
 - **Documents & mappers:** `ProductDocument`, `CustomerDocument`,
-  `CartDocument`, `OrderDocument` + a mapper per aggregate (hand-written,
-  no MapStruct). `Money` stored as `Decimal128` via registered custom
-  converters; currency stored alongside.
+  `CartDocument`, `OrderDocument` + hand-written mapping in the adapters (no
+  MapStruct). `Money` amounts stored as `Decimal128` via
+  `@Field(targetType = FieldType.DECIMAL128)`; currency code stored alongside.
 - **Adapters:** `Mongo*Repository` classes implement the domain ports,
   delegating to Spring Data Mongo interfaces over the documents.
 - **Indexes** (annotation-driven, `auto-index-creation: true`): unique `sku`;
-  unique active cart per customer (partial index on `customerId` where
-  `active`); `orders.customerId`.
+  unique `carts.customerId` (one cart per customer); `orders.customerId`.
 - **`DemoDataSeeder`** — idempotent `CommandLineRunner`: ~12 products across
   a few categories with realistic EUR prices, 2 customers. Every video opens
   on a populated store.
