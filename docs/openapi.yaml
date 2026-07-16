@@ -1,0 +1,461 @@
+openapi: 3.0.1
+info:
+  title: Demo Store API
+  description: "E-commerce store backend: products, customers, carts, and orders."
+  version: v1
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /api/products:
+    get:
+      tags:
+      - product-controller
+      operationId: list
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductResponse"
+    post:
+      tags:
+      - product-controller
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /api/orders/{id}/ship:
+    post:
+      tags:
+      - order-controller
+      operationId: ship
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/orders/{id}/pay:
+    post:
+      tags:
+      - order-controller
+      operationId: pay
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/orders/{id}/deliver:
+    post:
+      tags:
+      - order-controller
+      operationId: deliver
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/orders/checkout/{customerId}:
+    post:
+      tags:
+      - order-controller
+      operationId: checkout
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/customers:
+    post:
+      tags:
+      - customer-controller
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterCustomerRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+  /api/carts/{customerId}/items:
+    post:
+      tags:
+      - cart-controller
+      operationId: addItem
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddItemRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+  /api/carts/{customerId}/items/{productId}:
+    delete:
+      tags:
+      - cart-controller
+      operationId: removeItem
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+    patch:
+      tags:
+      - cart-controller
+      operationId: changeQuantity
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeQuantityRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+  /api/products/{id}:
+    get:
+      tags:
+      - product-controller
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /api/orders:
+    get:
+      tags:
+      - order-controller
+      operationId: listByCustomer
+      parameters:
+      - name: customerId
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderResponse"
+  /api/orders/{id}:
+    get:
+      tags:
+      - order-controller
+      operationId: get_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+  /api/customers/{id}:
+    get:
+      tags:
+      - customer-controller
+      operationId: get_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+  /api/carts/{customerId}:
+    get:
+      tags:
+      - cart-controller
+      operationId: get_3
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+components:
+  schemas:
+    CreateProductRequest:
+      required:
+      - name
+      - price
+      - sku
+      type: object
+      properties:
+        sku:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          minimum: 0.00
+          exclusiveMinimum: false
+          type: number
+        initialStock:
+          minimum: 0
+          type: integer
+          format: int32
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        sku:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+        stockQuantity:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+    OrderLineResponse:
+      type: object
+      properties:
+        productId:
+          type: string
+        name:
+          type: string
+        unitPrice:
+          type: number
+        quantity:
+          type: integer
+          format: int32
+        lineTotal:
+          type: number
+        currency:
+          type: string
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderLineResponse"
+        total:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+        placedAt:
+          type: string
+          format: date-time
+    RegisterCustomerRequest:
+      required:
+      - city
+      - country
+      - email
+      - name
+      - street
+      - zip
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        street:
+          type: string
+        city:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        street:
+          type: string
+        city:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+    AddItemRequest:
+      required:
+      - productId
+      type: object
+      properties:
+        productId:
+          type: string
+        quantity:
+          minimum: 1
+          type: integer
+          format: int32
+    CartItemResponse:
+      type: object
+      properties:
+        productId:
+          type: string
+        name:
+          type: string
+        unitPrice:
+          type: number
+        currency:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+    CartResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItemResponse"
+        total:
+          type: number
+          format: double
+    ChangeQuantityRequest:
+      type: object
+      properties:
+        quantity:
+          minimum: 1
+          type: integer
+          format: int32
