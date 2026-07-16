@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: demo-store
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/store}
+      auto-index-creation: true
+
+server:
+  port: 8080
