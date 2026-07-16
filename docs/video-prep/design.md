@@ -33,9 +33,9 @@ instructions-audit video. Everything video-related lives in
 - **DDD, pragmatic tier:** aggregates with real invariants, value objects,
   repository ports/adapters. No domain events, factories, or specification
   pattern — every concept present must earn screen time.
-- **No tests are written in this build.** `spring-boot-starter-test` stays on
-  the classpath and `src/test/java` exists empty — the first test in the
-  repo's life is written by an agent, on camera.
+- **Unit tests only.** JUnit 5 + Mockito + AssertJ (all via
+  `spring-boot-starter-test`). No Spring context tests, no Testcontainers, no
+  Mongo in tests — see §Testing.
 
 ## Domain model (`com.demo.store.domain`)
 
@@ -173,16 +173,43 @@ the instructions video.
   request); the other is the backup. Both must be implementable against this
   domain without touching more than a handful of files.
 
+## Testing (unit tests only)
+
+Plain JUnit 5 with Mockito for ports and AssertJ assertions; test names follow
+**given/when/then** (`givenExpiredState_whenMarkPaid_thenThrows`). No Spring
+context is loaded anywhere in the test suite — everything under
+`src/test/java` runs in milliseconds via `./mvnw test`.
+
+- **Domain:** `Money` (scale/rounding, add/multiply/percentage, negative
+  guard) · `Product` (stock decrease/increase invariants,
+  `InsufficientStockException`) · `Cart` (add merges same product, quantity
+  rules, `total()` in `Money`, `clear`) · `Order` (full state-machine matrix —
+  legal transitions succeed, every illegal one throws
+  `IllegalOrderStateException`).
+- **Application:** services with mocked repository ports — `CheckoutService`
+  (happy path builds the order from snapshots and clears the cart; empty cart
+  → `EmptyCartException`; short stock → `InsufficientStockException` and
+  nothing persisted) · `CartService` (product must exist and be active;
+  snapshots taken) · `OrderService` (transitions delegate + persist) ·
+  `PricingCalculator` (line and order totals in `Money`).
+- **Not covered on purpose:** controllers/DTO mappers (thin, exercised via
+  the compose'd app), infrastructure adapters (would need Mongo — integration
+  tests are out of scope), and the legacy `Cart.getTotal(): double` (tests pin
+  the *correct* `total(): Money` path only; the flaw stays untested bait for
+  the instructions video).
+
 ## Out of scope
 
-Tests (see stack note), authentication/security, payment processing (pay is
-a status flip), shipping integration, frontend, admin UI, discounts,
-cancellation, `.github/` customization, CI.
+Integration/E2E tests (unit tests only — see §Testing),
+authentication/security, payment processing (pay is a status flip), shipping
+integration, frontend, admin UI, discounts, cancellation, `.github/`
+customization, CI.
 
 ## Definition of done (for the implementing session)
 
 1. `docker compose up --build` from a clean checkout → app healthy on
-   `:8080`, Mongo seeded.
+   `:8080`, Mongo seeded. `./mvnw test` green (unit tests only, no Docker
+   needed).
 2. The happy path works end to end via HTTP: create/list products → cart
    add/change → checkout → order visible → pay → ship → deliver.
 3. Error paths return the problem body: unknown ids (404), empty-cart
