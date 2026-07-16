@@ -14,6 +14,11 @@ docker compose up --build
 App: http://localhost:8080 · MongoDB: localhost:27017 (both seeded with demo
 data on first start).
 
+Interactive API docs: opening http://localhost:8080 redirects to Swagger UI at
+http://localhost:8080/swagger-ui.html. The generated OpenAPI 3 specification is
+served at http://localhost:8080/v3/api-docs (JSON) and
+http://localhost:8080/v3/api-docs.yaml (YAML).
+
 For local development: start only Mongo (`docker compose up mongo -d`) and run
 the app with `./mvnw spring-boot:run`. Unit tests: `./mvnw test` (no Docker
 needed).
