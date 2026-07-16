@@ -7,21 +7,24 @@ pragmatic DDD.
 
 ## Run it
 
+Start MongoDB (in Docker) and run the app locally:
+
 ```bash
-docker compose up --build
+docker compose up -d          # MongoDB on localhost:27017
+./mvnw spring-boot:run        # app on http://localhost:8080
 ```
 
-App: http://localhost:8080 · MongoDB: localhost:27017 (both seeded with demo
-data on first start).
+The app boots against the Mongo container and seeds demo data on first start.
+Running it locally means code changes show up with a quick restart — no image
+rebuild.
 
 Interactive API docs: opening http://localhost:8080 redirects to Swagger UI at
 http://localhost:8080/swagger-ui.html. The generated OpenAPI 3 specification is
 served at http://localhost:8080/v3/api-docs (JSON) and
 http://localhost:8080/v3/api-docs.yaml (YAML).
 
-For local development: start only Mongo (`docker compose up mongo -d`) and run
-the app with `./mvnw spring-boot:run`. Unit tests: `./mvnw test` (no Docker
-needed).
+Unit tests: `./mvnw test` (no Docker needed). Stop MongoDB with `docker compose
+down` (add `-v` to also wipe the seeded data).
 
 ## API
 
