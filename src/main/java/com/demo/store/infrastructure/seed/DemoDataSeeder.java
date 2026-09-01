@@ -2,12 +2,17 @@ package com.demo.store.infrastructure.seed;
 
 import com.demo.store.domain.customer.Customer;
 import com.demo.store.domain.customer.CustomerRepository;
+import com.demo.store.domain.customer.CustomerId;
+import com.demo.store.domain.order.Order;
+import com.demo.store.domain.order.OrderLine;
+import com.demo.store.domain.order.OrderRepository;
 import com.demo.store.domain.product.Product;
 import com.demo.store.domain.product.ProductRepository;
 import com.demo.store.domain.shared.Address;
 import com.demo.store.domain.shared.Email;
 import com.demo.store.domain.shared.Money;
 import com.demo.store.infrastructure.mongo.SpringDataCustomerRepository;
+import com.demo.store.infrastructure.mongo.SpringDataOrderRepository;
 import com.demo.store.infrastructure.mongo.SpringDataProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +26,27 @@ public class DemoDataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
 
+    private static final String DEMO_CUSTOMER_ID = "bbab9618-9dda-44ce-8b8e-1bd000462f06";
+
     private final SpringDataProductRepository productDocuments;
     private final SpringDataCustomerRepository customerDocuments;
+    private final SpringDataOrderRepository orderDocuments;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final OrderRepository orderRepository;
 
     public DemoDataSeeder(SpringDataProductRepository productDocuments,
                           SpringDataCustomerRepository customerDocuments,
+                          SpringDataOrderRepository orderDocuments,
                           ProductRepository productRepository,
-                          CustomerRepository customerRepository) {
+                          CustomerRepository customerRepository,
+                          OrderRepository orderRepository) {
         this.productDocuments = productDocuments;
         this.customerDocuments = customerDocuments;
+        this.orderDocuments = orderDocuments;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
+        this.orderRepository = orderRepository;
     }
 
     @Override
@@ -45,6 +58,10 @@ public class DemoDataSeeder implements CommandLineRunner {
         if (customerDocuments.count() == 0) {
             seedCustomers();
             log.info("Seeded demo customers");
+        }
+        if (orderDocuments.findByCustomerId(DEMO_CUSTOMER_ID).isEmpty()) {
+            seedOrders();
+            log.info("Seeded demo orders for customer {}", DEMO_CUSTOMER_ID);
         }
     }
 
@@ -72,5 +89,59 @@ public class DemoDataSeeder implements CommandLineRunner {
         customerRepository.save(Customer.register("Marko Ilic",
                 new Email("marko.ilic@example.com"),
                 new Address("Bulevar Oslobodjenja 45", "Novi Sad", "21000", "RS")));
+    }
+
+    private void seedOrders() {
+        CustomerId customerId = new CustomerId(DEMO_CUSTOMER_ID);
+        List<Product> products = productRepository.findAllActive();
+
+        // Order 1 — laptop + mouse, status NEW
+        Product laptop = findBySku(products, "LAP-13");
+        Product mouse  = findBySku(products, "MOU-01");
+        OrderLine line1 = new OrderLine(laptop.id(), laptop.name(), laptop.price(), 1,
+                laptop.price());
+        OrderLine line2 = new OrderLine(mouse.id(), mouse.name(), mouse.price(), 2,
+                mouse.price().multiply(2));
+        Money total1 = laptop.price().add(mouse.price().multiply(2));
+        orderRepository.save(Order.place(customerId, List.of(line1, line2), total1));
+
+        // Order 2 — monitor + hub + cable, status PAID
+        Product monitor = findBySku(products, "MON-27");
+        Product hub     = findBySku(products, "HUB-07");
+        Product cable   = findBySku(products, "CBL-2M");
+        OrderLine line3 = new OrderLine(monitor.id(), monitor.name(), monitor.price(), 1,
+                monitor.price());
+        OrderLine line4 = new OrderLine(hub.id(), hub.name(), hub.price(), 1,
+                hub.price());
+        OrderLine line5 = new OrderLine(cable.id(), cable.name(), cable.price(), 3,
+                cable.price().multiply(3));
+        Money total2 = monitor.price().add(hub.price()).add(cable.price().multiply(3));
+        Order order2 = Order.place(customerId, List.of(line3, line4, line5), total2);
+        order2.markPaid();
+        orderRepository.save(order2);
+
+        // Order 3 — keyboard + headset + webcam, status DELIVERED
+        Product keyboard = findBySku(products, "KEY-75");
+        Product headset  = findBySku(products, "HDS-90");
+        Product webcam   = findBySku(products, "CAM-4K");
+        OrderLine line6 = new OrderLine(keyboard.id(), keyboard.name(), keyboard.price(), 1,
+                keyboard.price());
+        OrderLine line7 = new OrderLine(headset.id(), headset.name(), headset.price(), 1,
+                headset.price());
+        OrderLine line8 = new OrderLine(webcam.id(), webcam.name(), webcam.price(), 1,
+                webcam.price());
+        Money total3 = keyboard.price().add(headset.price()).add(webcam.price());
+        Order order3 = Order.place(customerId, List.of(line6, line7, line8), total3);
+        order3.markPaid();
+        order3.markShipped();
+        order3.markDelivered();
+        orderRepository.save(order3);
+    }
+
+    private Product findBySku(List<Product> products, String sku) {
+        return products.stream()
+                .filter(p -> p.sku().equals(sku))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Seeded product not found: " + sku));
     }
 }

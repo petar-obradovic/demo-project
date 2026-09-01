@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="StoreApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="store" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.demo.store.StoreApplication" />
+    <envs>
+      <env name="SPRING_DATA_MONGODB_URI" value="mongodb://172.18.225.140:27017/store" />
+    </envs>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

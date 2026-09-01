@@ -3,7 +3,7 @@ spring:
     name: demo-store
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/store}
+      uri: ${SPRING_DATA_MONGODB_URI=mongodb://172.18.225.140:27017/store}
       auto-index-creation: true
 
 server:

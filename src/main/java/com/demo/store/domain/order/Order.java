@@ -50,6 +50,13 @@ public class Order {
         status = OrderStatus.DELIVERED;
     }
 
+    public void cancel() {
+        if (status != OrderStatus.NEW && status != OrderStatus.PAID) {
+            throw new IllegalOrderStateException(status, "cancel");
+        }
+        status = OrderStatus.CANCELLED;
+    }
+
     public OrderId id() { return id; }
     public CustomerId customerId() { return customerId; }
     public List<OrderLine> lines() { return lines; }

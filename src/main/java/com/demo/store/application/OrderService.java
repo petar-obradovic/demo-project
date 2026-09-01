@@ -4,6 +4,8 @@ import com.demo.store.domain.customer.CustomerId;
 import com.demo.store.domain.order.Order;
 import com.demo.store.domain.order.OrderId;
 import com.demo.store.domain.order.OrderRepository;
+import com.demo.store.domain.product.Product;
+import com.demo.store.domain.product.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +14,11 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
         this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
     }
 
     public Order getOrder(OrderId id) {
@@ -41,6 +45,17 @@ public class OrderService {
     public Order deliver(OrderId id) {
         Order order = getOrder(id);
         order.markDelivered();
+        return orderRepository.save(order);
+    }
+
+    public Order cancel(OrderId id) {
+        Order order = getOrder(id);
+        order.cancel();
+        order.lines().forEach(line ->
+                productRepository.findById(line.productId()).ifPresent(product -> {
+                    product.increaseStock(line.quantity());
+                    productRepository.save(product);
+                }));
         return orderRepository.save(order);
     }
 }

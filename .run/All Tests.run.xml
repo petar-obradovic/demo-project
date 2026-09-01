@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All Tests" type="MavenRunConfiguration" factoryName="Maven">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+      <option name="myRunnerSettings" />
+      <option name="myParameters">
+        <MavenTasksAndConfigSettings>
+          <option name="myTasks">
+            <list>
+              <option value="test" />
+            </list>
+          </option>
+        </MavenTasksAndConfigSettings>
+      </option>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>

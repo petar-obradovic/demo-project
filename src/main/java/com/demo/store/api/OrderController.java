@@ -60,4 +60,9 @@ public class OrderController {
     public OrderResponse deliver(@PathVariable String id) {
         return OrderResponse.from(orderService.deliver(new OrderId(id)));
     }
+
+    @PostMapping("/{id}/cancel")
+    public OrderResponse cancel(@PathVariable String id) {
+        return OrderResponse.from(orderService.cancel(new OrderId(id)));
+    }
 }

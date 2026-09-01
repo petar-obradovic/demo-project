@@ -69,4 +69,46 @@ class OrderTest {
         assertThatThrownBy(o::markShipped).isInstanceOf(IllegalOrderStateException.class);
         assertThatThrownBy(o::markDelivered).isInstanceOf(IllegalOrderStateException.class);
     }
+
+    @Test
+    void givenNewOrder_whenCancel_thenStatusCancelled() {
+        Order o = newOrder();
+        o.cancel();
+        assertThat(o.status()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    void givenPaidOrder_whenCancel_thenStatusCancelled() {
+        Order o = newOrder();
+        o.markPaid();
+        o.cancel();
+        assertThat(o.status()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    void givenShippedOrder_whenCancel_thenThrows() {
+        Order o = newOrder();
+        o.markPaid();
+        o.markShipped();
+        assertThatThrownBy(o::cancel).isInstanceOf(IllegalOrderStateException.class);
+    }
+
+    @Test
+    void givenDeliveredOrder_whenCancel_thenThrows() {
+        Order o = newOrder();
+        o.markPaid();
+        o.markShipped();
+        o.markDelivered();
+        assertThatThrownBy(o::cancel).isInstanceOf(IllegalOrderStateException.class);
+    }
+
+    @Test
+    void givenCancelledOrder_whenAnyTransition_thenThrows() {
+        Order o = newOrder();
+        o.cancel();
+        assertThatThrownBy(o::markPaid).isInstanceOf(IllegalOrderStateException.class);
+        assertThatThrownBy(o::markShipped).isInstanceOf(IllegalOrderStateException.class);
+        assertThatThrownBy(o::markDelivered).isInstanceOf(IllegalOrderStateException.class);
+        assertThatThrownBy(o::cancel).isInstanceOf(IllegalOrderStateException.class);
+    }
 }
